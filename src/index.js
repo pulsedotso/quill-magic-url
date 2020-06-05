@@ -7,7 +7,8 @@ const defaults = {
   normalizeRegularExpression: /(https?:\/\/[\S]+)|(www.[\S]+)/,
   normalizeUrlOptions: {
     stripWWW: false
-  }
+  },
+  maxCharLength: null
 }
 
 export default class MagicUrl {
@@ -37,6 +38,11 @@ export default class MagicUrl {
         newDelta.insert(str)
         delta.ops = newDelta.ops
       }
+
+      if (delta.ops && delta.ops[0]) {
+        delta.ops[0].insert = this.trimText(delta.ops[0].insert)
+      }
+
       return delta
     })
   }
@@ -83,6 +89,14 @@ export default class MagicUrl {
   normalize (url) {
     if (this.options.normalizeRegularExpression.test(url)) {
       return normalizeUrl(url, this.options.normalizeUrlOptions)
+    }
+    return url
+  }
+  trimText (url) {
+    if (!this.options.maxCharLength) {
+      return url
+    } else if (url && url.length > this.options.maxCharLength) {
+      return `${url.slice(0, this.options.maxCharLength)}...`
     }
     return url
   }
